@@ -1,0 +1,40 @@
+version: '3'
+services:
+  www:
+    build: .
+    # image: php:7.1-apache
+    volumes:
+      - "./:/var/www/html"
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - db
+    command: >
+      bash -c "docker-php-ext-install mysqli  && apache2-foreground"
+
+  db:
+    image: mysql:latest
+    
+    restart: always
+    environment:
+      - MYSQL_DATABASE=php_docker
+      - MYSQL_USER=php_docker
+      - MYSQL_PASSWORD=password
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+      - MYSQL_ROOT_PASSWORD=password
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --init-file /docker-entrypoint-initdb.d/init.sql
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8001:80
+    environment:
+      - PHA_HOST=db
+      - PHA_PORT=3306
+     
+  
