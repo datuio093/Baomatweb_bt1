@@ -12,6 +12,7 @@
 
     <form class="container" method="POST">
         <div class="form-group">
+          <h1> Đăng Kí </h1>
           <label for="exampleInputEmail1">Email address</label>
           <input id="username" name="username"  class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
        
@@ -19,6 +20,10 @@
         <div class="form-group">
           <label for="exampleInputPassword1">Password</label>
           <input type="password" name="password" class="form-control" id="password" placeholder="Password">
+        </div>
+        <div class="form-group">
+          <label for="exampleInputPassword1">Confirm Password</label>
+          <input type="password" name="confirmpassword" class="form-control" id="confirmpassword" placeholder="Confirm Password">
         </div>
         <div class="thongbao"></div>
         <button name="submit" type="submit" onclick="check()" class="btn btn-primary">Submit</button>
@@ -35,32 +40,44 @@
       // echo "Connected successfully";
 
       if (isset($_POST['submit'])) {
-
-  
-        if($_POST['username'] && $_POST['password'])
-        {
-          if (!isset($_POST['username']) || empty($_POST['username']) || !isset($_POST['password']) || empty($_POST['password'])) {
-            echo "Tên đăng nhập và mật khẩu không được để trống";
+       
+      
+          $stmt = $conn->prepare("SELECT * FROM users WHERE name = ?");
+          $stmt->bind_param("s", $_POST['username']);
+          $stmt->execute();
+          $result = $stmt->get_result();
+        if (!isset($_POST['username']) || empty($_POST['username']) || !isset($_POST['password']) || empty($_POST['password'])) {
+            echo '<p class="container">Tên đăng nhập và mật khẩu không được để trống</p>';
         }
 
-        if (!preg_match('/^[A-Za-z0-9_-]+$/', $_POST['username'])) {
-            echo "Tên đăng nhập ko được chứa kí tự đặc biệt trừ - và _";
+        else if (!preg_match('/^[A-Za-z0-9_-]+$/', $_POST['username'])) {
+            echo '<p class="container">Tên đăng nhập không được chứa kí tự đặc biệt trừ - và _</p>';
         }
-          else{
+        else if ($_POST['password'] != $_POST['confirmpassword']) {
+          echo '<p class="container"> Xác nhận mật khẩu không chính xác </p>';
+        }  
+      
+
+        else if ($result->num_rows > 0) {
+       
+          echo '<p class="container">Username already exists</p>';
+        } 
+     
+        else{
         $sql = "INSERT INTO users (name,password) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $_POST['username'], $_POST['password']);
-        // $stmt->execute();
+          
 
         if ($stmt->execute()) {
-          // Query executed successfully
-          echo "<script> window.location.href='home.php';</script>";
+   
+          echo "<script> window.location.href='dangnhap.php';</script>";
       } else {
           // Query failed to execute
           echo "Error executing query: " . $stmt->error;
       }
     }
-        }
+        
     }
      ?>
 
